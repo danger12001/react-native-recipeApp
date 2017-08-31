@@ -2,7 +2,7 @@ import {
   AppRegistry,
 } from 'react-native';
 
-import App from './app/app.js'
+import App from './app/router.js'
 
 
 AppRegistry.registerComponent('tutorial', () => App);

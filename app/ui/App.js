@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {  Text, View, FlatList, Image, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
-import recipes from './actions/recipes.js';
-import  Loading  from './ui/loading.js';
+import  Loading  from './loading.js';
+import  {Actions}  from 'react-native-router-flux';
 
 var styles = StyleSheet.create({
   image: {
@@ -36,7 +36,7 @@ var styles = StyleSheet.create({
   }
 
 });
-export default class App extends Component {
+export default class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {loading: true, recipes: [], showRecipe: false};
@@ -56,6 +56,8 @@ renderIngredients(){
     let measure = 'strMeasure' + i;
     if(this.state.recipe[ingredient] !== '' || this.state.recipe[ingredient] !== null && this.state.recipe[measure] !== '' || this.state.recipe[measure] !== null ){
     ingredients.push({ingredient: this.state.recipe[ingredient], measure: this.state.recipe[measure]})
+  } else {
+    console.log('no ingredient');
   }
   }
 return  ingredients.map((ingredient, index) => (
@@ -80,8 +82,9 @@ renderRecipe(){
 }
 
   goToRecipe(id){
-this.setState({loading: true});
-this.fetchRecipe(id);
+// this.setState({loading: true});
+// this.fetchRecipe(id);
+  Actions.recipe({id: id});
   }
 
 
@@ -94,7 +97,7 @@ return fetch('http://www.themealdb.com/api/json/v1/1/lookup.php?i=' + id)
             this.setState({
               recipe: data.meals[0],
               loading: false,
-              showRecipe: true
+              // showRecipe: true
             })
             recipe = data.meals[0]
             return recipe;
@@ -130,6 +133,7 @@ return fetch('http://www.themealdb.com/api/json/v1/1/search.php?s=vegan')
           })
   }
   renderRecipes(){
+    console.log(this.state.recipes);
     if(this.fetchRecipes() !== null){
       return  this.state.recipes.map((recipe, index) => (
         <TouchableOpacity  key={index} onPress={() => this.goToRecipe(recipe.idMeal)} >
@@ -153,23 +157,11 @@ renderLoading(){
   if(this.state.loading){
     return (<Loading/>)
   } else {
-      if(!this.state.showRecipe){
     return (
       <ScrollView contentContainerStyle={styles.contentContainer}>
       {this.renderRecipes()}
       </ScrollView>
     )
-  } else {
-    return(
-
-    <ScrollView contentContainerStyle={styles.contentContainer}>
-     {this.renderRecipe()}
-    </ScrollView>
-  )
-
-
-  }
-
   }
 
 }
