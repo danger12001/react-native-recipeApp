@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {  Text, View, FlatList, Image, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
 import  Loading  from './loading.js';
 import  {Actions}  from 'react-native-router-flux';
+import Meteor from 'react-native-meteor';
 
 var styles = StyleSheet.create({
   image: {
@@ -36,126 +37,38 @@ var styles = StyleSheet.create({
   }
 
 });
-export default class Home extends Component {
+ export default class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = {loading: true, recipes: [], showRecipe: false};
+    const Collection = Meteor.collection('recipes');
+    const recipes = Collection.find({});
+    this.state = {loading: false, recipes: recipes};
  }
 
-componentDidMount(){
-  this.fetchRecipes();
-}
-goBack(){
-  this.setState({showRecipe:false, recipe: undefined});
-}
-
-renderIngredients(){
-  var ingredients = [];
-  for(var i = 1; i < 21; i++){
-    let ingredient = 'strIngredient' + i;
-    let measure = 'strMeasure' + i;
-    if(this.state.recipe[ingredient] !== '' || this.state.recipe[ingredient] !== null && this.state.recipe[measure] !== '' || this.state.recipe[measure] !== null ){
-    ingredients.push({ingredient: this.state.recipe[ingredient], measure: this.state.recipe[measure]})
-  } else {
-    console.log('no ingredient');
-  }
-  }
-return  ingredients.map((ingredient, index) => (
-<View    key={index}>
-<Text style={styles.ingredientContainer}>{ingredient.ingredient} - {ingredient.measure}</Text>
-</View>
-  ))
-}
-
-renderRecipe(){
-    return   (
-      <View style={styles.container}>
-      <Button onPress={() => this.goBack()} title='Back'/>
-      <Text style={styles.recipeTitle}> {this.state.recipe.strMeal}</Text>
-      <Image style={styles.image} source={{uri: this.state.recipe.strMealThumb}}/>
-      <Text style={styles.spacer}> </Text>
-      <Text style={styles.recipeTitle}> {this.state.recipe.strInstructions}</Text>
-      <Text style={styles.spacer}> </Text>
-      {this.renderIngredients()}
-      </View>
-  );
-}
 
   goToRecipe(id){
-// this.setState({loading: true});
-// this.fetchRecipe(id);
   Actions.recipe({id: id});
   }
 
 
 
-  fetchRecipe(id){
-    let recipe;
-return fetch('http://www.themealdb.com/api/json/v1/1/lookup.php?i=' + id)
-          .then((res) => res.json() )
-          .then((data) => {
-            this.setState({
-              recipe: data.meals[0],
-              loading: false,
-              // showRecipe: true
-            })
-            recipe = data.meals[0]
-            return recipe;
-          })
-          .catch((error) => {
-            this.setState({
-              loading: false,
-            })
-            recipe = null;
-            return recipe;
-          })
-  }
-
-  fetchRecipes(){
-    let recipes;
-return fetch('http://www.themealdb.com/api/json/v1/1/search.php?s=vegan')
-          .then((res) => res.json() )
-          .then((data) => {
-            this.setState({
-              recipes: data.meals,
-              loading: false
-            })
-            recipes = data.meals
-            return recipes;
-          })
-          .catch((error) => {
-            this.setState({
-              recipes: [],
-              loading: false
-            })
-            recipes = null;
-            return recipes;
-          })
-  }
   renderRecipes(){
-    console.log(this.state.recipes);
-    if(this.fetchRecipes() !== null){
+    console.log(this.state.recipes[0]);
       return  this.state.recipes.map((recipe, index) => (
-        <TouchableOpacity  key={index} onPress={() => this.goToRecipe(recipe.idMeal)} >
+        <TouchableOpacity  key={index} onPress={() => this.goToRecipe(recipe._id)} >
         <View  style={styles.container}>
-        <Text style={styles.recipeTitle}> {recipe.strMeal}</Text>
-        <Image style={styles.image} source={{uri: recipe.strMealThumb}}/>
+        <Text style={styles.recipeTitle}> {recipe.title}</Text>
+        <Image style={styles.image} source={{uri: recipe.image_src}}/>
         </View>
         </TouchableOpacity>
     ))
-    } else {
-      return (
-        <Text>There are no vegan recipes :(</Text>
-      );
-    }
   }
 
 
-
-
 renderLoading(){
-  if(this.state.loading){
-    return (<Loading/>)
+
+  if(this.state.recipes.length <= 0){
+    return (<Text> There are no vegan recipes :( </Text>)
   } else {
     return (
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -167,11 +80,9 @@ renderLoading(){
 }
 
   render() {
-    let loading = this.state.loading;
     return (
       <ScrollView>
       {this.renderLoading()}
-
       </ScrollView>
     );
   }

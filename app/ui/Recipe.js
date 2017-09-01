@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {  Text, View, FlatList, Image, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
 import  Loading  from './loading.js';
+import Meteor from 'react-native-meteor';
 
 var styles = StyleSheet.create({
   image: {
@@ -23,12 +24,26 @@ var styles = StyleSheet.create({
     textAlign: 'center',
   },
   recipeTitle: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: 'bold',
     flex: 1,
     flexDirection: 'row',
     color: 'black',
     textAlign: 'center'
+  },
+  recipeHeading: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    flex: 1,
+    flexDirection: 'row',
+    color: 'black',
+    textAlign: 'center'
+  },
+  ingredient: {
+    textAlign: 'left',
+    fontSize: 18,
+    color: 'black',
+        fontWeight: 'bold',
   },
   spacer: {
     marginTop: '5%'
@@ -38,82 +53,56 @@ var styles = StyleSheet.create({
 export default class Recipe extends Component {
   constructor(props) {
     super(props);
-    this.state = {loading: true, recipes: [], showRecipe: false};
+    const Collection = Meteor.collection('recipes');
+    const recipe = Collection.find({_id: props.id});
+    this.state = {loading: false, recipe: recipe[0]};
  }
 
-componentDidMount(){
-  this.fetchRecipe();
-}
-goBack(){
-  // this.setState({showRecipe:false, recipe: undefined});
-}
+
 
 renderIngredients(){
-  var ingredients = [];
-  for(var i = 1; i < 21; i++){
-    let ingredient = 'strIngredient' + i;
-    let measure = 'strMeasure' + i;
-    if(this.state.recipe[ingredient] !== '' || this.state.recipe[ingredient] !== null && this.state.recipe[measure] !== '' || this.state.recipe[measure] !== null ){
-    ingredients.push({ingredient: this.state.recipe[ingredient], measure: this.state.recipe[measure]})
-  } else {
-    console.log('no ingredient');
-  }
-  }
-return  ingredients.map((ingredient, index) => (
+return  this.state.recipe.ingredients.map((ingredient, index) => (
 <View    key={index}>
-<Text style={styles.ingredientContainer}>{ingredient.ingredient} - {ingredient.measure}</Text>
+<Text style={styles.ingredient}>{index + 1} - {ingredient}</Text>
 </View>
   ))
 }
 
+renderInstructions(){
+return  this.state.recipe.instructions.map((instruction, index) => (
+<View    key={index}>
+<Text style={styles.ingredient}>{index + 1} - {instruction}</Text>
+</View>
+  ))
+}
+// <Text style={styles.spacer}> </Text>
+
 renderRecipe(){
     return   (
       <View style={styles.container}>
-    
-      <Text style={styles.recipeTitle}> {this.state.recipe.strMeal}</Text>
-      <Image style={styles.image} source={{uri: this.state.recipe.strMealThumb}}/>
+
       <Text style={styles.spacer}> </Text>
-      <Text style={styles.recipeTitle}> {this.state.recipe.strInstructions}</Text>
+      <Text style={styles.recipeTitle}> {this.state.recipe.title}</Text>
+      <Text style={styles.spacer}> </Text>
+      <Image style={styles.image} source={{uri: this.state.recipe.image_src}}/>
+      <Text style={styles.spacer}> </Text>
+      <Text style={styles.recipeHeading}>Ingredients</Text>
       <Text style={styles.spacer}> </Text>
       {this.renderIngredients()}
+      <Text style={styles.spacer}> </Text>
+      <Text style={styles.recipeHeading}>Instructions</Text>
+      <Text style={styles.spacer}> </Text>
+      {this.renderInstructions()}
+      <Text style={styles.spacer}> </Text>
       </View>
   );
 }
-
-  goToRecipe(id){
-// this.fetchRecipe(id);
-  }
-
-
-
-  fetchRecipe(){
-    this.setState({loading: true});
-    let recipe;
-return fetch('http://www.themealdb.com/api/json/v1/1/lookup.php?i=' + this.props.id)
-          .then((res) => res.json() )
-          .then((data) => {
-            this.setState({
-              recipe: data.meals[0],
-              loading: false,
-              showRecipe: true
-            })
-            recipe = data.meals[0]
-            return recipe;
-          })
-          .catch((error) => {
-            this.setState({
-              loading: false,
-            })
-            recipe = null;
-            return recipe;
-          })
-  }
-
 
 
 
 
 renderLoading(){
+  console.log(this.state);
   if(this.state.loading){
     return (<Loading/>)
   } else {

@@ -11,7 +11,7 @@ container: {
   flex: 1,
   flexDirection: 'column',
   alignItems: 'center',
-    marginTop: '75%'
+    marginTop: '50%'
 
 }
 
